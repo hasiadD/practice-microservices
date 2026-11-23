@@ -1,0 +1,15 @@
+services:
+  product-service:
+    build: ./product-service
+  order-service:
+    build: ./order-service
+    environment:
+      - PRODUCT_URL=http://product-service:5000
+    depends_on: [product-service]
+  gateway:
+    build: ./gateway
+    environment:
+      - PRODUCT_URL=http://product-service:5000
+      - ORDER_URL=http://order-service:5000
+    ports: ["8080:8080"]
+    depends_on: [product-service, order-service]

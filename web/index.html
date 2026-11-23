@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Класифікація зображень</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; text-align: center; }
+    img { max-width: 100%; margin: 16px 0; border-radius: 8px; }
+    li { text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Що на зображенні?</h1>
+  <input type="file" id="file" accept="image/*">
+  <p id="status">Завантаження моделі...</p>
+  <img id="preview" alt="" hidden>
+  <ul id="result"></ul>
+  <script>
+    let model;
+    const status = document.getElementById("status");
+    mobilenet.load().then(m => { model = m; status.textContent = "Модель готова. Оберіть зображення."; });
+
+    document.getElementById("file").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file || !model) return;
+      const img = document.getElementById("preview");
+      img.src = URL.createObjectURL(file);
+      img.hidden = false;
+      img.onload = async () => {
+        status.textContent = "Аналіз...";
+        const preds = await model.classify(img, 3);
+        const list = document.getElementById("result");
+        list.innerHTML = "";
+        preds.forEach(p => {
+          const li = document.createElement("li");
+          li.textContent = p.className + " — " + (p.probability * 100).toFixed(1) + "%";
+          list.appendChild(li);
+        });
+        status.textContent = "Готово.";
+      };
+    });
+  </script>
+</body>
+</html>
